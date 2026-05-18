@@ -31,27 +31,36 @@ export function makePlayer(p, x, y) {
     },
 
     movePlayer(moveBy) {
-      if (!isMaxOneKeyDown(p) || this.freeze) return;
+      const touch = window.__brainrotInput || {};
+      const touchKeysDown = [
+        touch.ArrowRight,
+        touch.ArrowLeft,
+        touch.ArrowUp,
+        touch.ArrowDown,
+      ].filter(Boolean).length;
+      if (this.freeze) return;
+      if (touchKeysDown > 1) return;
+      if (touchKeysDown === 0 && !isMaxOneKeyDown(p)) return;
 
-      if (p.keyIsDown(p.RIGHT_ARROW)) {
+      if (p.keyIsDown(p.RIGHT_ARROW) || touch.ArrowRight) {
         this.setDirection("right");
         this.setAnim("run-side");
         this.x += moveBy;
       }
 
-      if (p.keyIsDown(p.LEFT_ARROW)) {
+      if (p.keyIsDown(p.LEFT_ARROW) || touch.ArrowLeft) {
         this.setDirection("left");
         this.setAnim("run-side");
         this.x -= moveBy;
       }
 
-      if (p.keyIsDown(p.UP_ARROW)) {
+      if (p.keyIsDown(p.UP_ARROW) || touch.ArrowUp) {
         this.setDirection("up");
         this.setAnim("run-up");
         this.y -= moveBy;
       }
 
-      if (p.keyIsDown(p.DOWN_ARROW)) {
+      if (p.keyIsDown(p.DOWN_ARROW) || touch.ArrowDown) {
         this.setDirection("down");
         this.setAnim("run-down");
         this.y += moveBy;

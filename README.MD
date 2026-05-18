@@ -1,21 +1,18 @@
-# Pokemon prototype game made with JavaScript + p5.js
+# Catch a Brainrot
 
-![Screenshot of the game](./screenshot.png)
+A mobile-friendly brainrot catching battle prototype made with JavaScript + p5.js.
 
-Live demo : https://jslegend.itch.io/p5-pokemon-prototype
+Based on the MIT-licensed JSLegend p5.js game prototype. This version replaces the original creature battle branding with a new brainrot theme, adds iPhone-friendly touch controls, and retunes the battle into a quick "catch the brainrot" experience.
 
-A prototype pokemon game that includes :
+## Play
 
-- camera
-- scenes
-- basic battle system
-- basic animation player system
-- player controller
-- basic collision detection
+Open `index.html` through any static web server.
 
-Made with JavaScript and the p5.js creative coding library.
+Controls:
 
-Tutorial on how to build this : https://www.youtube.com/watch?v=WPT2BmkFFyo
+- Desktop: Enter to start, arrow keys to move, 1-4 in battle.
+- iPhone/mobile: use the on-screen D-pad and battle buttons.
 
-I run a YouTube channel where I make long-form JS gamedev tutorials.
-If you're interested you can take a look : https://youtube.com/@jslegenddev
+## License
+
+MIT. See `LICENSE`.

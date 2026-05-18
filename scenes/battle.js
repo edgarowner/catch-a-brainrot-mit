@@ -3,8 +3,8 @@ import { makeDialogBox } from "../entities/dialogBox.js";
 const states = {
   default: "default",
   introNpc: "intro-npc",
-  introNpcPokemon: "intro-npc-pokemon",
-  introPlayerPokemon: "intro-player-pokemon",
+  introNpcBrainrot: "intro-npc-brainrot",
+  introPlayerBrainrot: "intro-player-brainrot",
   playerTurn: "player-turn",
   playerAttack: "player-attack",
   npcTurn: "npc-turn",
@@ -12,7 +12,7 @@ const states = {
   winnerDeclared: "winner-declared",
 };
 
-function makePokemon(name, x, finalX, y, maxHp, attacks, dataBox) {
+function makeBrainrot(name, x, finalX, y, maxHp, attacks, dataBox) {
   return {
     name,
     finalX,
@@ -55,110 +55,110 @@ export function makeBattle(p) {
       y: 20,
       spriteRef: null,
     },
-    npcPokemon: makePokemon(
-      "VENUSAUR",
+    npcBrainrot: makeBrainrot(
+      "TRALALERO",
       600,
       310,
       20,
       100,
       [
-        { name: "TACKLE", power: 10 },
-        { name: "RAZOR LEAF", power: 55 },
-        { name: "TAKE DOWN", power: 45 },
-        { name: "POWER WHIP", power: 50 },
+        { name: "SKIBIDI HIT", power: 12 },
+        { name: "ESPRESSO SPLASH", power: 42 },
+        { name: "RIZZ KICK", power: 38 },
+        { name: "SIGMA ROAR", power: 35 },
       ],
       makeDataBox(-300, 40, 15, 30, 118, 40)
     ),
-    playerPokemon: makePokemon(
-      "BLASTOISE",
+    playerBrainrot: makeBrainrot(
+      "BOMBARDIRO",
       -170,
       20,
       128,
       100,
       [
-        { name: "TACKLE", power: 10 },
-        { name: "HYDRO PUMP", power: 50 },
-        { name: "HYDRO CANNON", power: 45 },
-        { name: "WATER GUN", power: 50 },
+        { name: "SKIBIDI HIT", power: 16 },
+        { name: "RIZZ BEAM", power: 40 },
+        { name: "CATCH", power: 30 },
+        { name: "SIGMA ROAR", power: 36 },
       ],
       makeDataBox(510, 220, 38, 30, 136, 40)
     ),
-    drawDataBox(pokemon) {
-      p.image(pokemon.dataBox.spriteRef, pokemon.dataBox.x, pokemon.dataBox.y);
+    drawDataBox(brainrot) {
+      p.image(brainrot.dataBox.spriteRef, brainrot.dataBox.x, brainrot.dataBox.y);
       p.text(
-        pokemon.name,
-        pokemon.dataBox.x + pokemon.dataBox.nameOffset.x,
-        pokemon.dataBox.y + pokemon.dataBox.nameOffset.y
+        brainrot.name,
+        brainrot.dataBox.x + brainrot.dataBox.nameOffset.x,
+        brainrot.dataBox.y + brainrot.dataBox.nameOffset.y
       );
 
       p.push();
       p.angleMode(p.DEGREES);
       p.rotate(360);
       p.noStroke();
-      if (pokemon.dataBox.healthBarLength > 50) {
+      if (brainrot.dataBox.healthBarLength > 50) {
         p.fill(0, 200, 0);
       }
-      if (pokemon.dataBox.healthBarLength < 50) {
+      if (brainrot.dataBox.healthBarLength < 50) {
         p.fill(255, 165, 0);
       }
-      if (pokemon.dataBox.healthBarLength < 20) {
+      if (brainrot.dataBox.healthBarLength < 20) {
         p.fill(200, 0, 0);
       }
       p.rect(
-        pokemon.dataBox.x + pokemon.dataBox.healthBarOffset.x,
-        pokemon.dataBox.y + pokemon.dataBox.healthBarOffset.y,
-        pokemon.dataBox.healthBarLength,
+        brainrot.dataBox.x + brainrot.dataBox.healthBarOffset.x,
+        brainrot.dataBox.y + brainrot.dataBox.healthBarOffset.y,
+        brainrot.dataBox.healthBarLength,
         6
       );
       p.pop();
     },
-    async dealDamage(targetPokemon, attackingPokemon) {
-      targetPokemon.hp -= attackingPokemon.selectedAttack.power;
-      if (targetPokemon.hp > 0) {
-        targetPokemon.dataBox.healthBarLength =
-          (targetPokemon.hp * targetPokemon.dataBox.maxHealthBarLength) /
-          targetPokemon.maxHp;
+    async dealDamage(targetBrainrot, attackingBrainrot) {
+      targetBrainrot.hp -= attackingBrainrot.selectedAttack.power;
+      if (targetBrainrot.hp > 0) {
+        targetBrainrot.dataBox.healthBarLength =
+          (targetBrainrot.hp * targetBrainrot.dataBox.maxHealthBarLength) /
+          targetBrainrot.maxHp;
         return;
       }
-      targetPokemon.dataBox.healthBarLength = 0;
-      targetPokemon.isFainted = true;
+      targetBrainrot.dataBox.healthBarLength = 0;
+      targetBrainrot.isFainted = true;
       await new Promise((resolve) => setTimeout(resolve, 1000));
       this.currentState = states.battleEnd;
     },
     load() {
       this.battleBackgroundImage = p.loadImage("assets/battle-background.png");
-      this.npc.spriteRef = p.loadImage("assets/GENTLEMAN.png");
-      this.npcPokemon.spriteRef = p.loadImage("assets/VENUSAUR.png");
-      this.playerPokemon.spriteRef = p.loadImage("assets/BLASTOISE.png");
-      this.playerPokemon.dataBox.spriteRef = p.loadImage(
+      this.npc.spriteRef = p.loadImage("assets/MEMELORD.png");
+      this.npcBrainrot.spriteRef = p.loadImage("assets/TRALALERO.png");
+      this.playerBrainrot.spriteRef = p.loadImage("assets/BOMBARDIRO.png");
+      this.playerBrainrot.dataBox.spriteRef = p.loadImage(
         "assets/databox_thin.png"
       );
-      this.npcPokemon.dataBox.spriteRef = p.loadImage(
+      this.npcBrainrot.dataBox.spriteRef = p.loadImage(
         "assets/databox_thin_foe.png"
       );
       this.dialogBox.load();
     },
     setup() {
       this.dialogBox.displayText(
-        "Mark the gentleman wants to battle !",
+        "Mark the meme lord wants to battle !",
         async () => {
           await new Promise((resolve) => setTimeout(resolve, 2000));
           this.currentState = states.introNpc;
           this.dialogBox.clearText();
           this.dialogBox.displayText(
-            `He sends out a ${this.npcPokemon.name} !`,
+            `He sends out ${this.npcBrainrot.name} !`,
             async () => {
-              this.currentState = states.introNpcPokemon;
+              this.currentState = states.introNpcBrainrot;
               await new Promise((resolve) => setTimeout(resolve, 1000));
               this.dialogBox.clearText();
               this.dialogBox.displayText(
-                `Go! ${this.playerPokemon.name} !`,
+                `Go! ${this.playerBrainrot.name} !`,
                 async () => {
-                  this.currentState = states.introPlayerPokemon;
+                  this.currentState = states.introPlayerBrainrot;
                   await new Promise((resolve) => setTimeout(resolve, 1000));
                   this.dialogBox.clearText();
                   this.dialogBox.displayText(
-                    `What will ${this.playerPokemon.name} do ?`,
+                    `What will ${this.playerBrainrot.name} do ?`,
                     async () => {
                       await new Promise((resolve) => setTimeout(resolve, 1000));
                       this.currentState = states.playerTurn;
@@ -178,28 +178,28 @@ export function makeBattle(p) {
       }
 
       if (
-        this.currentState === states.introNpcPokemon &&
-        this.npcPokemon.x >= this.npcPokemon.finalX
+        this.currentState === states.introNpcBrainrot &&
+        this.npcBrainrot.x >= this.npcBrainrot.finalX
       ) {
-        this.npcPokemon.x -= 0.5 * p.deltaTime;
-        if (this.npcPokemon.dataBox.x <= 0)
-          this.npcPokemon.dataBox.x += 0.5 * p.deltaTime;
+        this.npcBrainrot.x -= 0.5 * p.deltaTime;
+        if (this.npcBrainrot.dataBox.x <= 0)
+          this.npcBrainrot.dataBox.x += 0.5 * p.deltaTime;
       }
 
       if (
-        this.currentState === states.introPlayerPokemon &&
-        this.playerPokemon.x <= this.playerPokemon.finalX
+        this.currentState === states.introPlayerBrainrot &&
+        this.playerBrainrot.x <= this.playerBrainrot.finalX
       ) {
-        this.playerPokemon.x += 0.5 * p.deltaTime;
-        this.playerPokemon.dataBox.x -= 0.65 * p.deltaTime;
+        this.playerBrainrot.x += 0.5 * p.deltaTime;
+        this.playerBrainrot.dataBox.x -= 0.65 * p.deltaTime;
       }
 
-      if (this.playerPokemon.isFainted) {
-        this.playerPokemon.y += 0.8 * p.deltaTime;
+      if (this.playerBrainrot.isFainted) {
+        this.playerBrainrot.y += 0.8 * p.deltaTime;
       }
 
-      if (this.npcPokemon.isFainted) {
-        this.npcPokemon.y += 0.8 * p.deltaTime;
+      if (this.npcBrainrot.isFainted) {
+        this.npcBrainrot.y += 0.8 * p.deltaTime;
       }
 
       this.dialogBox.update();
@@ -209,17 +209,17 @@ export function makeBattle(p) {
       p.background(0);
       p.image(this.battleBackgroundImage, 0, 0);
 
-      p.image(this.npcPokemon.spriteRef, this.npcPokemon.x, this.npcPokemon.y);
+      p.image(this.npcBrainrot.spriteRef, this.npcBrainrot.x, this.npcBrainrot.y);
 
-      this.drawDataBox(this.npcPokemon);
+      this.drawDataBox(this.npcBrainrot);
 
       p.image(
-        this.playerPokemon.spriteRef,
-        this.playerPokemon.x,
-        this.playerPokemon.y
+        this.playerBrainrot.spriteRef,
+        this.playerBrainrot.x,
+        this.playerBrainrot.y
       );
 
-      this.drawDataBox(this.playerPokemon);
+      this.drawDataBox(this.playerBrainrot);
 
       if (
         this.currentState === states.default ||
@@ -229,24 +229,24 @@ export function makeBattle(p) {
 
       if (
         this.currentState === states.playerTurn &&
-        !this.playerPokemon.selectedAttack
+        !this.playerBrainrot.selectedAttack
       ) {
         this.dialogBox.displayTextImmediately(
-          `1) ${this.playerPokemon.attacks[0].name}    3) ${this.playerPokemon.attacks[2].name}\n2) ${this.playerPokemon.attacks[1].name}   4) ${this.playerPokemon.attacks[3].name}`
+          `1) ${this.playerBrainrot.attacks[0].name}    3) ${this.playerBrainrot.attacks[2].name}\n2) ${this.playerBrainrot.attacks[1].name}   4) ${this.playerBrainrot.attacks[3].name}`
         );
       }
 
       if (
         this.currentState === states.playerTurn &&
-        this.playerPokemon.selectedAttack &&
-        !this.playerPokemon.isAttacking &&
-        !this.playerPokemon.isFainted
+        this.playerBrainrot.selectedAttack &&
+        !this.playerBrainrot.isAttacking &&
+        !this.playerBrainrot.isFainted
       ) {
         this.dialogBox.clearText();
         this.dialogBox.displayText(
-          `${this.playerPokemon.name} used ${this.playerPokemon.selectedAttack.name} !`,
+          `${this.playerBrainrot.name} used ${this.playerBrainrot.selectedAttack.name} !`,
           async () => {
-            await this.dealDamage(this.npcPokemon, this.playerPokemon);
+            await this.dealDamage(this.npcBrainrot, this.playerBrainrot);
             if (this.currentState !== states.battleEnd) {
               await new Promise((resolve) => setTimeout(resolve, 1000));
               this.dialogBox.clearText();
@@ -254,23 +254,23 @@ export function makeBattle(p) {
             }
           }
         );
-        this.playerPokemon.isAttacking = true;
+        this.playerBrainrot.isAttacking = true;
       }
 
-      if (this.currentState === states.npcTurn && !this.npcPokemon.isFainted) {
-        this.npcPokemon.selectedAttack =
-          this.npcPokemon.attacks[
-            Math.floor(Math.random() * this.npcPokemon.attacks.length)
+      if (this.currentState === states.npcTurn && !this.npcBrainrot.isFainted) {
+        this.npcBrainrot.selectedAttack =
+          this.npcBrainrot.attacks[
+            Math.floor(Math.random() * this.npcBrainrot.attacks.length)
           ];
         this.dialogBox.clearText();
         this.dialogBox.displayText(
-          `The foe's ${this.npcPokemon.name} used ${this.npcPokemon.selectedAttack.name} !`,
+          `The wild ${this.npcBrainrot.name} used ${this.npcBrainrot.selectedAttack.name} !`,
           async () => {
-            await this.dealDamage(this.playerPokemon, this.npcPokemon);
+            await this.dealDamage(this.playerBrainrot, this.npcBrainrot);
             if (this.currentState !== states.battleEnd) {
               await new Promise((resolve) => setTimeout(resolve, 1000));
-              this.playerPokemon.selectedAttack = null;
-              this.playerPokemon.isAttacking = false;
+              this.playerBrainrot.selectedAttack = null;
+              this.playerBrainrot.isAttacking = false;
             }
           }
         );
@@ -278,19 +278,19 @@ export function makeBattle(p) {
       }
 
       if (this.currentState === states.battleEnd) {
-        if (this.npcPokemon.isFainted) {
+        if (this.npcBrainrot.isFainted) {
           this.dialogBox.clearText();
           this.dialogBox.displayText(
-            `${this.npcPokemon.name} fainted ! You won !`
+            `${this.npcBrainrot.name} was caught ! You won !`
           );
           this.currentState = states.winnerDeclared;
           return;
         }
 
-        if (this.playerPokemon.isFainted) {
+        if (this.playerBrainrot.isFainted) {
           this.dialogBox.clearText();
           this.dialogBox.displayText(
-            `${this.playerPokemon.name} fainted ! You lost !`
+            `${this.playerBrainrot.name} got ratio'd ! You lost !`
           );
           this.currentState = states.winnerDeclared;
         }
@@ -303,16 +303,16 @@ export function makeBattle(p) {
       if (this.currentState === states.playerTurn) {
         switch (keyEvent.key) {
           case "1":
-            this.playerPokemon.selectedAttack = this.playerPokemon.attacks[0];
+            this.playerBrainrot.selectedAttack = this.playerBrainrot.attacks[0];
             break;
           case "2":
-            this.playerPokemon.selectedAttack = this.playerPokemon.attacks[1];
+            this.playerBrainrot.selectedAttack = this.playerBrainrot.attacks[1];
             break;
           case "3":
-            this.playerPokemon.selectedAttack = this.playerPokemon.attacks[2];
+            this.playerBrainrot.selectedAttack = this.playerBrainrot.attacks[2];
             break;
           case "4":
-            this.playerPokemon.selectedAttack = this.playerPokemon.attacks[3];
+            this.playerBrainrot.selectedAttack = this.playerBrainrot.attacks[3];
             break;
           default:
         }

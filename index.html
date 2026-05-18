@@ -2,38 +2,116 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Catch a Brainrot</title>
     <style>
+      * { box-sizing: border-box; }
       body {
         height: 100vh;
         margin: 0;
         display: flex;
+        flex-direction: column;
+        align-items: center;
         justify-content: center;
-        background-image: url("assets/background-art.jpeg");
-        background-size: cover;
-        background-position: center;
+        background: radial-gradient(circle at top, #38206b, #080611 70%);
+        color: white;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        overflow: hidden;
+        touch-action: none;
       }
 
       canvas {
-        max-width: 100%;
+        width: min(100vw, calc(100vh * 1.333));
+        max-height: 72vh;
         object-fit: contain;
+        image-rendering: pixelated;
+        border: 3px solid #f8ec6a;
+        box-shadow: 0 0 28px rgba(255, 236, 106, 0.35);
+        background: #000;
       }
+
+      #mobile-controls {
+        width: min(100vw, 560px);
+        padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        user-select: none;
+      }
+
+      .dpad {
+        grid-column: 1;
+        display: grid;
+        grid-template-columns: repeat(3, 54px);
+        grid-template-rows: repeat(3, 44px);
+        gap: 4px;
+        justify-content: center;
+      }
+
+      .actions {
+        grid-column: 2 / 4;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(88px, 1fr));
+        gap: 8px;
+        align-content: center;
+      }
+
+      button {
+        border: 2px solid #fff3;
+        border-radius: 12px;
+        background: linear-gradient(#3df5c1, #168f80);
+        color: #071311;
+        font-weight: 900;
+        font-size: 18px;
+        min-height: 44px;
+        box-shadow: inset 0 -4px #0003, 0 4px 0 #0005;
+      }
+      button:active { transform: translateY(3px); box-shadow: inset 0 -2px #0003, 0 1px 0 #0005; }
+      .up { grid-column: 2; grid-row: 1; }
+      .left { grid-column: 1; grid-row: 2; }
+      .down { grid-column: 2; grid-row: 3; }
+      .right { grid-column: 3; grid-row: 2; }
+      .start { background: linear-gradient(#f8ec6a, #d99623); }
+      .fight { background: linear-gradient(#ff7ccf, #c91b82); color: #fff; }
     </style>
   </head>
   <body>
     <canvas id="game"></canvas>
+    <div id="mobile-controls" aria-label="Game controls">
+      <div class="dpad">
+        <button class="up" data-hold="ArrowUp">▲</button>
+        <button class="left" data-hold="ArrowLeft">◀</button>
+        <button class="right" data-hold="ArrowRight">▶</button>
+        <button class="down" data-hold="ArrowDown">▼</button>
+      </div>
+      <div class="actions">
+        <button class="start" data-tap="Enter">START</button>
+        <button class="fight" data-tap="1">SKIBIDI HIT</button>
+        <button data-tap="2">RIZZ BEAM</button>
+        <button data-tap="3">CATCH</button>
+        <button data-tap="4">SIGMA ROAR</button>
+      </div>
+    </div>
     <script src="p5.min.js"></script>
     <script>
-      // prevent itch.io scrolling
+      window.__brainrotInput = { ArrowUp:false, ArrowDown:false, ArrowLeft:false, ArrowRight:false };
       window.addEventListener("keydown", (e) => {
-        if (
-          ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(
-            e.key
-          )
-        ) {
-          e.preventDefault();
-        }
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
+      });
+      function sendKey(key) {
+        window.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+      }
+      document.querySelectorAll("[data-hold]").forEach((btn) => {
+        const key = btn.dataset.hold;
+        const down = (e) => { e.preventDefault(); window.__brainrotInput[key] = true; };
+        const up = (e) => { e.preventDefault(); window.__brainrotInput[key] = false; };
+        btn.addEventListener("pointerdown", down);
+        btn.addEventListener("pointerup", up);
+        btn.addEventListener("pointercancel", up);
+        btn.addEventListener("pointerleave", up);
+      });
+      document.querySelectorAll("[data-tap]").forEach((btn) => {
+        btn.addEventListener("click", (e) => { e.preventDefault(); sendKey(btn.dataset.tap); });
       });
     </script>
     <script type="module" src="main.js"></script>

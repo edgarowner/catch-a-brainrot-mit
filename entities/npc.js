@@ -17,7 +17,7 @@ export function makeNPC(p, x, y) {
     spriteX: 0,
     spriteY: -15,
     load() {
-      this.spriteRef = p.loadImage("assets/trainer_GENTLEMAN.png");
+      this.spriteRef = p.loadImage("assets/trainer_MEMELORD.png");
     },
 
     prepareAnims() {

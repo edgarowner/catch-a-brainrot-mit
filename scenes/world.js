@@ -62,7 +62,7 @@ export function makeWorld(p, setScene) {
       p.background(0);
       this.npc.handleCollisionsWith(this.player, () => {
         this.dialogBox.displayText(
-          "I see that you need training.\nLet's battle !",
+          "I smell fresh brainrot energy.\nLet's battle !",
           async () => {
             await new Promise((resolve) => setTimeout(resolve, 1000));
             this.dialogBox.setVisibility(false);
