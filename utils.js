@@ -22,7 +22,7 @@ export function preventOverlap(objA, objB) {
       return;
     }
     // left
-    objB.x = objA.x - objA.width;
+    objB.x = objA.x - objB.width;
     return;
   }
 
