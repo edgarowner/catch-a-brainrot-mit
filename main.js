@@ -1,6 +1,6 @@
 import { makeMenu } from "./scenes/menu.js";
 import { debugMode } from "./entities/debugMode.js";
-import { makeWorld } from "./scenes/world.js";
+import { makeWorld } from "./scenes/world.js?v=5";
 import { makeBattle } from "./scenes/battle.js";
 
 new p5((p) => {

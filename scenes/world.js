@@ -2,7 +2,7 @@ import { makeNPC } from "../entities/npc.js";
 import { makePlayer } from "../entities/player.js";
 import { makeDialogBox } from "../entities/dialogBox.js";
 import { makeCamera } from "../entities/camera.js";
-import { checkCollision, preventOverlap } from "../utils.js";
+import { checkCollision, preventOverlap } from "../utils.js?v=5";
 
 function rect(x, y, width, height, name = "") {
   return { x, y, width, height, name };
