@@ -1,6 +1,6 @@
 import { makeCharacter } from "./character.js";
 import { debugMode } from "./debugMode.js";
-import { drawTile, getFramesPos, isMaxOneKeyDown } from "../utils.js";
+import { drawTile, getFramesPos } from "../utils.js";
 
 export function makePlayer(p, x, y) {
   return {
@@ -32,35 +32,33 @@ export function makePlayer(p, x, y) {
 
     movePlayer(moveBy) {
       const touch = window.__brainrotInput || {};
-      const touchKeysDown = [
-        touch.ArrowRight,
-        touch.ArrowLeft,
-        touch.ArrowUp,
-        touch.ArrowDown,
-      ].filter(Boolean).length;
+      const right = p.keyIsDown(p.RIGHT_ARROW) || p.keyIsDown(68) || touch.ArrowRight;
+      const left = p.keyIsDown(p.LEFT_ARROW) || p.keyIsDown(65) || touch.ArrowLeft;
+      const up = p.keyIsDown(p.UP_ARROW) || p.keyIsDown(87) || touch.ArrowUp;
+      const down = p.keyIsDown(p.DOWN_ARROW) || p.keyIsDown(83) || touch.ArrowDown;
+      const keysDown = [right, left, up, down].filter(Boolean).length;
       if (this.freeze) return;
-      if (touchKeysDown > 1) return;
-      if (touchKeysDown === 0 && !isMaxOneKeyDown(p)) return;
+      if (keysDown !== 1) return;
 
-      if (p.keyIsDown(p.RIGHT_ARROW) || touch.ArrowRight) {
+      if (right) {
         this.setDirection("right");
         this.setAnim("run-side");
         this.x += moveBy;
       }
 
-      if (p.keyIsDown(p.LEFT_ARROW) || touch.ArrowLeft) {
+      if (left) {
         this.setDirection("left");
         this.setAnim("run-side");
         this.x -= moveBy;
       }
 
-      if (p.keyIsDown(p.UP_ARROW) || touch.ArrowUp) {
+      if (up) {
         this.setDirection("up");
         this.setAnim("run-up");
         this.y -= moveBy;
       }
 
-      if (p.keyIsDown(p.DOWN_ARROW) || touch.ArrowDown) {
+      if (down) {
         this.setDirection("down");
         this.setAnim("run-down");
         this.y += moveBy;

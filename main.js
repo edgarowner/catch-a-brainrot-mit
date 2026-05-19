@@ -1,7 +1,7 @@
 import { makeMenu } from "./scenes/menu.js";
 import { debugMode } from "./entities/debugMode.js";
-import { makeWorld } from "./scenes/world.js?v=5";
-import { makeBattle } from "./scenes/battle.js";
+import { makeWorld } from "./scenes/world.js?v=6";
+import { makeBattle } from "./scenes/battle.js?v=6";
 
 new p5((p) => {
   let font;
@@ -10,13 +10,29 @@ new p5((p) => {
   function setScene(name) {
     if (scenes.includes(name)) {
       currentScene = name;
+      document.body.dataset.scene = name;
     }
   }
 
   const menu = makeMenu(p);
   const world = makeWorld(p, setScene);
   const battle = makeBattle(p);
-  window.__catchABrainrot = { world, setScene };
+  function handleGameKey(keyEvent) {
+    if (keyEvent.key === "Shift") {
+      debugMode.toggle();
+    }
+
+    if ((keyEvent.keyCode === p.ENTER || keyEvent.key === "Enter") && currentScene === "menu")
+      setScene("world");
+
+    if (currentScene === "world") world.onKeyPressed(keyEvent);
+    if (currentScene === "battle") battle.onKeyPressed(keyEvent);
+  }
+  window.__catchABrainrot = {
+    world,
+    setScene,
+    tapKey: (key) => handleGameKey({ key, keyCode: key === "Enter" ? p.ENTER : undefined }),
+  };
 
   p.preload = () => {
     font = p.loadFont("./assets/power-clear.ttf");
@@ -36,6 +52,7 @@ new p5((p) => {
 
     world.setup();
     battle.setup();
+    document.body.dataset.scene = currentScene;
   };
 
   p.draw = () => {
@@ -59,14 +76,7 @@ new p5((p) => {
   };
 
   p.keyPressed = (keyEvent) => {
-    if (keyEvent.key === "Shift") {
-      debugMode.toggle();
-    }
-
-    if ((keyEvent.keyCode === p.ENTER || keyEvent.key === "Enter") && currentScene === "menu")
-      setScene("world");
-
-    if (currentScene === "battle") battle.onKeyPressed(keyEvent);
+    handleGameKey(keyEvent);
   };
 
   p.keyReleased = () => {

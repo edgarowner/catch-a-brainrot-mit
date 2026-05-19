@@ -72,7 +72,11 @@
       .down { grid-column: 2; grid-row: 3; }
       .right { grid-column: 3; grid-row: 2; }
       .start { background: linear-gradient(#f8ec6a, #d99623); }
+      .interact { background: linear-gradient(#8bd2ff, #347ac7); color: #06121f; }
       .fight { background: linear-gradient(#ff7ccf, #c91b82); color: #fff; }
+      .battle-only { display: none; }
+      body[data-scene="battle"] .battle-only { display: block; }
+      body[data-scene="battle"] .world-only { display: none; }
     </style>
   </head>
   <body>
@@ -85,11 +89,12 @@
         <button class="down" data-hold="ArrowDown">▼</button>
       </div>
       <div class="actions">
-        <button class="start" data-tap="Enter">START</button>
-        <button class="fight" data-tap="1">SKIBIDI HIT</button>
-        <button data-tap="2">RIZZ BEAM</button>
-        <button data-tap="3">CATCH</button>
-        <button data-tap="4">SIGMA ROAR</button>
+        <button class="start world-only" data-tap="Enter">START</button>
+        <button class="interact world-only" data-tap="e">E / INTERACT</button>
+        <button class="fight battle-only" data-tap="1">SKIBIDI HIT</button>
+        <button class="battle-only" data-tap="2">RIZZ BEAM</button>
+        <button class="battle-only" data-tap="3">CATCH</button>
+        <button class="battle-only" data-tap="4">SIGMA ROAR</button>
       </div>
     </div>
     <script src="p5.min.js"></script>
@@ -99,7 +104,14 @@
         if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
       });
       function sendKey(key) {
-        window.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+        if (window.__catchABrainrot?.tapKey) {
+          window.__catchABrainrot.tapKey(key);
+          return;
+        }
+        const code = key === "Enter" ? 13 : key >= "1" && key <= "4" ? key.charCodeAt(0) : key.toUpperCase().charCodeAt(0);
+        const event = new KeyboardEvent("keydown", { key, keyCode: code, which: code, bubbles: true });
+        window.dispatchEvent(event);
+        document.dispatchEvent(event);
       }
       document.querySelectorAll("[data-hold]").forEach((btn) => {
         const key = btn.dataset.hold;
@@ -114,6 +126,6 @@
         btn.addEventListener("click", (e) => { e.preventDefault(); sendKey(btn.dataset.tap); });
       });
     </script>
-    <script type="module" src="main.js?v=5"></script>
+    <script type="module" src="main.js?v=6"></script>
   </body>
 </html>

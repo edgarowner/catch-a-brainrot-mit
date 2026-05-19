@@ -2,10 +2,20 @@ import { makeNPC } from "../entities/npc.js";
 import { makePlayer } from "../entities/player.js";
 import { makeDialogBox } from "../entities/dialogBox.js";
 import { makeCamera } from "../entities/camera.js";
-import { checkCollision, preventOverlap } from "../utils.js?v=5";
+import { checkCollision, preventOverlap } from "../utils.js?v=6";
 
 function rect(x, y, width, height, name = "") {
   return { x, y, width, height, name };
+}
+
+function inflate(box, pad) {
+  return {
+    x: box.x - pad,
+    y: box.y - pad,
+    width: box.width + pad * 2,
+    height: box.height + pad * 2,
+    name: box.name,
+  };
 }
 
 function drawTile(p, camera, x, y, color, border = null) {
@@ -49,18 +59,30 @@ function drawTree(p, camera, x, y) {
   p.ellipse(sx + 8, sy + 16, 28, 24);
 }
 
+function drawInteractHint(p, camera, target, text = "E") {
+  const sx = Math.round(target.x + target.width / 2 + camera.x);
+  const sy = Math.round(target.y - 10 + camera.y);
+  p.noStroke();
+  p.fill("#10121f");
+  p.rect(sx - 28, sy - 24, 56, 22, 6);
+  p.fill("#ffe76b");
+  p.textSize(14);
+  p.textAlign(p.CENTER, p.CENTER);
+  p.text(text, sx, sy - 13);
+  p.textAlign(p.LEFT, p.BASELINE);
+}
+
 function drawWarpHint(p, camera, warp) {
   const sx = Math.round(warp.x + camera.x);
   const sy = Math.round(warp.y + camera.y);
   p.noStroke();
-  p.fill("rgba(61,245,193,0.45)");
+  p.fill("rgba(61,245,193,0.25)");
   p.rect(sx, sy, warp.width, warp.height);
 }
 
 const maps = {
   town: {
     spawn: { x: 500, y: 710 },
-    npc: { x: 620, y: 514 },
     collisions: [
       rect(-64, -64, 1248, 64, "north edge"),
       rect(-64, 960, 1248, 64, "south edge"),
@@ -83,6 +105,22 @@ const maps = {
       rect(204, 704, 92, 72, "lab"),
       rect(794, 718, 92, 72, "home"),
     ],
+    npcs: [
+      {
+        id: "guide",
+        x: 462,
+        y: 468,
+        kind: "dialog",
+        message: "Guide: Use WASD or arrows to move.\nPress E on doors and NPCs.",
+      },
+      {
+        id: "fighter",
+        x: 660,
+        y: 510,
+        kind: "battle",
+        message: "Meme Lord: My TRALALERO wants smoke!",
+      },
+    ],
   },
   house: {
     spawn: { x: 256, y: 286 },
@@ -97,6 +135,7 @@ const maps = {
       rect(286, 230, 84, 56, "bed"),
     ],
     warps: [rect(202, 292, 124, 64, "exit")],
+    npcs: [],
   },
 };
 
@@ -104,7 +143,7 @@ export function makeWorld(p, setScene) {
   return {
     camera: makeCamera(p, 100, 0),
     player: makePlayer(p, 0, 0),
-    npc: makeNPC(p, 0, 0),
+    npcs: [],
     dialogBox: makeDialogBox(p, 0, 280),
     currentMap: "town",
     lastTownExit: maps.town.spawn,
@@ -113,11 +152,13 @@ export function makeWorld(p, setScene) {
     alpha: 0,
     blinkBack: false,
     easing: 3,
+    pendingBattle: false,
 
     load() {
       this.dialogBox.load();
       this.player.load();
-      this.npc.load();
+      this.npcs = maps.town.npcs.map((data) => ({ data, entity: makeNPC(p, data.x, data.y) }));
+      for (const npc of this.npcs) npc.entity.load();
     },
 
     setup() {
@@ -125,47 +166,107 @@ export function makeWorld(p, setScene) {
       this.player.y = maps.town.spawn.y;
       this.player.setup();
       this.camera.attachTo(this.player);
-      this.npc.x = maps.town.npc.x;
-      this.npc.y = maps.town.npc.y;
-      this.npc.setup();
+      for (const npc of this.npcs) npc.entity.setup();
     },
 
     applyCollisions() {
       for (const boundary of maps[this.currentMap].collisions) {
         if (checkCollision(boundary, this.player)) preventOverlap(boundary, this.player);
       }
+
+      if (this.currentMap === "town") {
+        for (const npc of this.npcs) {
+          if (checkCollision(npc.entity, this.player)) preventOverlap(npc.entity, this.player);
+        }
+      }
     },
 
-    checkWarps() {
-      if (this.warpCooldown > 0) return;
-      for (const warp of maps[this.currentMap].warps) {
-        if (!checkCollision(warp, this.player)) continue;
-        if (this.currentMap === "town") {
-          this.lastTownExit = { x: warp.x, y: warp.y + 62 };
-          this.currentMap = "house";
-          this.player.x = maps.house.spawn.x;
-          this.player.y = maps.house.spawn.y;
-          this.dialogBox.displayTextImmediately(`Entered ${warp.name.toUpperCase()} HOUSE.`);
-          this.dialogBox.setVisibility(true);
-        } else {
-          this.currentMap = "town";
-          this.player.x = this.lastTownExit.x;
-          this.player.y = this.lastTownExit.y;
-          this.dialogBox.setVisibility(false);
-        }
-        this.warpCooldown = 30;
-        break;
+    playerNear(target, pad = 44) {
+      return checkCollision(inflate(target, pad), this.player);
+    },
+
+    findNearbyWarp() {
+      return maps[this.currentMap].warps.find((warp) => this.playerNear(warp, 56));
+    },
+
+    findNearbyNpc() {
+      if (this.currentMap !== "town") return null;
+      return this.npcs.find((npc) => this.playerNear(npc.entity, 34));
+    },
+
+    enterWarp(warp) {
+      if (this.warpCooldown > 0 || !warp) return false;
+      if (this.currentMap === "town") {
+        this.lastTownExit = { x: warp.x, y: warp.y + 62 };
+        this.currentMap = "house";
+        this.player.x = maps.house.spawn.x;
+        this.player.y = maps.house.spawn.y;
+        this.dialogBox.displayTextImmediately(`Entered ${warp.name.toUpperCase()} HOUSE.`);
+        this.dialogBox.setVisibility(true);
+      } else {
+        this.currentMap = "town";
+        this.player.x = this.lastTownExit.x;
+        this.player.y = this.lastTownExit.y;
+        this.dialogBox.setVisibility(false);
       }
+      this.warpCooldown = 18;
+      return true;
+    },
+
+    async startNpcBattle(npc) {
+      if (this.pendingBattle) return;
+      this.pendingBattle = true;
+      this.player.freeze = true;
+      this.dialogBox.clearText();
+      this.dialogBox.displayText(npc.data.message, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        this.makeScreenFlash = true;
+        await new Promise((resolve) => setTimeout(resolve, 650));
+        this.makeScreenFlash = false;
+        this.dialogBox.setVisibility(false);
+        this.player.freeze = false;
+        this.pendingBattle = false;
+        setScene("battle");
+      });
+      this.dialogBox.setVisibility(true);
+    },
+
+    interact() {
+      if (this.dialogBox.isVisible && this.dialogBox.isComplete && !this.pendingBattle) {
+        this.dialogBox.setVisibility(false);
+        this.player.freeze = false;
+        return;
+      }
+
+      const warp = this.findNearbyWarp();
+      if (warp && this.enterWarp(warp)) return;
+
+      const npc = this.findNearbyNpc();
+      if (!npc) {
+        this.dialogBox.displayTextImmediately("Nothing to interact with.");
+        this.dialogBox.setVisibility(true);
+        return;
+      }
+
+      if (npc.data.kind === "battle") {
+        this.startNpcBattle(npc);
+        return;
+      }
+
+      this.player.freeze = true;
+      this.dialogBox.clearText();
+      this.dialogBox.displayText(npc.data.message, () => {
+        this.player.freeze = false;
+      });
+      this.dialogBox.setVisibility(true);
     },
 
     update() {
       this.camera.update();
       this.player.update();
-      // Warps run before solid collisions so door tiles can sit inside building walls.
-      this.checkWarps();
       this.applyCollisions();
       if (this.warpCooldown > 0) this.warpCooldown--;
-      if (this.currentMap === "town") this.npc.update();
+      if (this.currentMap === "town") for (const npc of this.npcs) npc.entity.update();
       this.dialogBox.update();
 
       if (this.alpha <= 0) this.blinkBack = true;
@@ -229,27 +330,21 @@ export function makeWorld(p, setScene) {
       p.text("BRAINROT SAFE HOUSE", 160 + this.camera.x, 88 + this.camera.y);
     },
 
+    drawHints() {
+      const warp = this.findNearbyWarp();
+      if (warp) drawInteractHint(p, this.camera, warp, "E DOOR");
+      const npc = this.findNearbyNpc();
+      if (npc) drawInteractHint(p, this.camera, npc.entity, npc.data.kind === "battle" ? "E FIGHT" : "E TALK");
+    },
+
     draw() {
       p.clear();
       if (this.currentMap === "town") this.drawTown();
       if (this.currentMap === "house") this.drawHouseInterior();
 
-      if (this.currentMap === "town") {
-        this.npc.draw(this.camera);
-        this.npc.handleCollisionsWith(this.player, () => {
-          this.dialogBox.displayText("You found a rare wild brainrot.\nLet's battle!", async () => {
-            await new Promise((resolve) => setTimeout(resolve, 700));
-            this.dialogBox.setVisibility(false);
-            this.makeScreenFlash = true;
-            await new Promise((resolve) => setTimeout(resolve, 700));
-            this.makeScreenFlash = false;
-            setScene("battle");
-          });
-          this.dialogBox.setVisibility(true);
-        });
-      }
-
+      if (this.currentMap === "town") for (const npc of this.npcs) npc.entity.draw(this.camera);
       this.player.draw(this.camera);
+      this.drawHints();
       this.dialogBox.draw();
 
       if (this.makeScreenFlash) {
@@ -258,8 +353,12 @@ export function makeWorld(p, setScene) {
       }
     },
 
+    onKeyPressed(keyEvent) {
+      if (keyEvent.key === "e" || keyEvent.key === "E") this.interact();
+    },
+
     keyReleased() {
-      for (const key of [p.RIGHT_ARROW, p.LEFT_ARROW, p.UP_ARROW, p.DOWN_ARROW]) {
+      for (const key of [p.RIGHT_ARROW, p.LEFT_ARROW, p.UP_ARROW, p.DOWN_ARROW, 87, 65, 83, 68]) {
         if (p.keyIsDown(key)) return;
       }
       switch (this.player.direction) {
